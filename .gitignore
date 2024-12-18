@@ -1,1 +1,4 @@
 /logs_all/*
+__pycache__/
+*.py[cod]
+*$py.class

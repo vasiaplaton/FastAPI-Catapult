@@ -13,12 +13,12 @@ import pydantic
 from sqlalchemy import Column
 from sqlalchemy import select, update
 
-from app import models
+from app.models.base_model import BaseModel
 
 _all_ = ('BaseServiceCrud',)
 
 # pylint: disable=invalid-name
-ModelType = TypeVar('ModelType', bound=models.BaseModel)
+ModelType = TypeVar('ModelType', bound=BaseModel)
 # pylint: disable=invalid-name
 SchemaType = TypeVar('SchemaType', bound=pydantic.BaseModel)
 # pylint: disable=invalid-name

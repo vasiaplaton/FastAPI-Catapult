@@ -124,6 +124,7 @@ from sqlalchemy import Column, String, Integer
 
 __all__ = ("Cat",)
 
+
 class Cat(BaseModel):
     __tablename__ = "cats"
 
@@ -143,19 +144,17 @@ Place in `app/schemas/cat.py`
 from pydantic import BaseModel
 from typing import Optional
 
-
 __all__ = ("CatCreateSchema", "CatSchema")
 
+
 class CatCreateSchema(BaseModel):
-    id: Optional[int]
+    id: Optional[int] = None
     name: str
     age: int
 
+
 class CatSchema(CatCreateSchema):
     id: int
-
-    class Config:
-        orm_mode = True
 ```
 
 Don't forget to place in `app/schemas/__init__.py`
@@ -164,24 +163,57 @@ from .cat import *
 ```
 
 #### Cat Service:
+Place in `app/services/cat_service.py`
 ```python
 from app.services.base_service_crud import BaseServiceCrud
 from app.models import Cat
-from app.schemas import CatCreate, CatRead
+from app.schemas import CatSchema, CatCreateSchema
 
-class CatService(BaseServiceCrud[Cat, CatRead, CatCreate]):
+
+__all__ = ('CatService', )
+
+
+class CatService(BaseServiceCrud[Cat, CatSchema, CatCreateSchema]):
     def __init__(self, db):
-        super().__init__(db, Cat, CatRead, CatCreate)
-    
+        super().__init__(db, Cat, CatSchema, CatCreateSchema)
+
     @classmethod
     def _get_id(cls):
         return Cat.id
 ```
+Don't forget to place in `app/services/__init__.py`
+```python 
+from .cat_service import *
+```
+
+#### Switch in venv
+```bash 
+python3 -m venv venv
+source venv/bin/activate
+```
+
+#### Install dependencies
+```bash
+pip install -r requirements.txt
+```
+
+#### Run the db
+```bash 
+docker-compose up db
+```
+Do not forget modify to [.env](.env) if you need another db login/password
+
+#### Set env variables
+```bash
+export $(cat .env | xargs) && \
+export DATABASE_URL="postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}"
+```
+
 
 #### Cat Migration:
 1. Generate the migration script:
    ```bash
-   alembic revision --autogenerate -m "Add Cat model"
+   alembic revision --autogenerate -m "add cat model"
    ```
 
 2. Apply the migration:
@@ -190,19 +222,50 @@ class CatService(BaseServiceCrud[Cat, CatRead, CatCreate]):
    ```
 
 #### Endpoint for Cats:
+Place in `app/main.py`
 ```python
-from fastapi import APIRouter, Depends
+from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db_dependency import get_db
 from app.services.cat_service import CatService
-from app.schemas.cat import CatCreate, CatRead
+from app.schemas.cat import CatSchema, CatCreateSchema
 
-router = APIRouter()
+app = FastAPI()
 
-@router.post("/cats", response_model=CatRead)
-def create_cat(cat: CatCreate, db: Session = Depends(get_db)):
-    service = CatService(db, Cat, CatRead, CatCreate)
+
+@app.post("/cats", response_model=CatSchema)
+def create_cat(cat: CatCreateSchema, db: Session = Depends(get_db)):
+    """
+    Create a new cat in the database.
+    """
+    service = CatService(db)
     return service.create(cat)
+
+
+@app.get("/cats/{cat_id}", response_model=CatSchema)
+def get_cat_by_id(cat_id: int, db: Session = Depends(get_db)):
+    """
+    Get a single cat by its ID.
+    """
+    service = CatService(db)
+    cat = service.get_by_id(cat_id)
+    if not cat:
+        raise HTTPException(status_code=404, detail="Cat not found")
+    return cat
+
+
+@app.get("/cats", response_model=list[CatSchema])
+def get_all_cats(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    """
+    Get a list of cats with pagination.
+    """
+    service = CatService(db)
+    cats = service.get_all()[skip: skip + limit]
+    return cats
+```
+## Run the server
+```bash 
+./run.sh
 ```
 
 ---
