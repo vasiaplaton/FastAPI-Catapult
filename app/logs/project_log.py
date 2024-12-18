@@ -1,9 +1,12 @@
 """Module for file logging"""
 import logging
+import os
 from logging.handlers import TimedRotatingFileHandler
 
 log_formatter = logging.Formatter('%(asctime)s <%(module)s> %(levelname)s '
                                   '%(funcName)s(%(lineno)d) %(message)s')
+
+os.makedirs('logs_all', exist_ok=True)
 LOG_FILE = 'logs_all/service.log'
 
 log_handler = TimedRotatingFileHandler(LOG_FILE, when="midnight", backupCount=31)
