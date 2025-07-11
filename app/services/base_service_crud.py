@@ -1,7 +1,8 @@
 """
 Defines a generic base service class `BaseServiceCrud` for CRUD operations on SQLAlchemy models with Pydantic schemas.
 
-The `BaseServiceCrud` class is a reusable base class for creating CRUD service layers in applications that use SQLAlchemy
+The `BaseServiceCrud` class is a reusable base class for creating CRUD service layers in applications
+that use SQLAlchemy
 for ORM models and Pydantic for data validation. It provides methods for creating, reading, updating, and deleting
 database records, converting between SQLAlchemy models and Pydantic schemas. This design pattern allows for type safety
 and easy schema validation when interacting with the database.
@@ -141,6 +142,12 @@ class BaseServiceCrud(Generic[ModelType, SchemaType, CreateSchemaType]):
         self.db.flush()
 
     def crupdate(self, id_in, schema: CreateSchemaType) -> None:
+        """
+        Creates or updates a record based on its primary key.
+        :param id_in: The primary key value of the record to create or update.
+        :param schema: The schema instance with data for the record.
+        :return: None
+        """
         if self.get_by_id(id_in):
             self.update(id_in, schema)
         else:
@@ -176,7 +183,13 @@ class BaseServiceCrud(Generic[ModelType, SchemaType, CreateSchemaType]):
         query = select(self.model)
         return self.from_models((self.db.execute(query)).scalars().all())
 
-    def build_filter_query(self, kwargs: dict[str, Any]):
+    def build_filter_query(self, kwargs: dict[str, Any]) -> select:
+        """
+        Builds a SQLAlchemy query to filter records based on provided keyword arguments.
+        :param kwargs: dict[str, Any]: A dictionary of field names and their corresponding values to filter by.
+        :return: sqlalchemy.sql.select.Select: A SQLAlchemy query object that filters
+        the model based on the provided arguments.
+        """
         query = select(self.model)
         for key, value in kwargs.items():
             attr = getattr(self.model, key)
@@ -185,16 +198,37 @@ class BaseServiceCrud(Generic[ModelType, SchemaType, CreateSchemaType]):
             query = query.filter(getattr(self.model, key) == value)
         return query
 
-    def find_all_by_filters(self, **kwargs):
+    def find_all_by_filters(self, **kwargs) -> list[SchemaType]:
+        """
+        Finds all records that match the provided filters.
+        :param kwargs: dict[str, Any]: A dictionary of field names and their corresponding values to filter by.
+        :return: list[SchemaType]: A list of records that match the filters, represented as Pydantic schema instances.
+        """
         query = self.build_filter_query(kwargs)
         return self.execute_and_get_all(query)
 
-    def find_one_by_filters(self, **kwargs):
+    def find_one_by_filters(self, **kwargs) -> Optional[SchemaType]:
+        """
+        Finds a single record that matches the provided filters.
+        :param kwargs: dict[str, Any]: A dictionary of field names and their corresponding values to filter by.
+        :return: SchemaType: A single record that matches the filters, represented as a Pydantic schema instance.
+        """
         query = self.build_filter_query(kwargs)
         return self.execute_and_get_one(query)
 
     def execute_and_get_one(self, query) -> Optional[SchemaType]:
+        """
+        Executes a SQLAlchemy query and retrieves a single record.
+        :param query: sqlalchemy.sql.select.Select: A SQLAlchemy query object to execute.
+        :return: SchemaType: The first record returned by the query, represented as a Pydantic schema instance.
+        """
         return self.from_model((self.db.execute(query)).scalars().first())
 
     def execute_and_get_all(self, query) -> list[SchemaType]:
+        """
+        Executes a SQLAlchemy query and retrieves all records.
+        :param query: sqlalchemy.sql.select.Select: A SQLAlchemy query object to execute.
+        :return: list[SchemaType]: A list of all records returned by the query,
+        represented as Pydantic schema instances.
+        """
         return self.from_models((self.db.execute(query)).scalars().all())

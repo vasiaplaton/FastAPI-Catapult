@@ -1,0 +1,42 @@
+[MASTER]
+# direct Pylint to use the pylint-pydantic plugin
+load-plugins=pylint_pydantic
+
+# directories (and virtualenvs) to ignore
+ignore=venv,env,build,dist,migrations
+
+[MESSAGES CONTROL]
+# turn off the checks you’ll fight most in a FastAPI/Pydantic app
+#disable=
+#    C0114,  # missing-module-docstring
+#    C0115,  # missing-class-docstring
+#    C0116,  # missing-function-docstring
+#    R0903,  # too-few-public-methods (common in BaseModel subclasses)
+#    R0913,  # too-many-arguments (endpoint functions)
+#    W0613,  # unused-argument (FastAPI dependency injection)
+#    W0511,  # fixme
+#    E1101,  # no-member (dynamic attrs from Pydantic/BaseModel)
+#    R0902,  # too-many-instance-attributes (models can be big)
+#    R0915,  # too-many-statements (complex business logic)
+
+[FORMAT]
+# keep your code lines a bit longer for complex JSON schemas
+max-line-length=120
+
+[DESIGN]
+# allow up to 8 args in endpoints or model constructors
+# max-args=8
+
+[BASIC]
+# allow short names in tests, iterators, exceptions, etc.
+# good-names=i,j,k,ex,_,db
+
+[TYPECHECK]
+# modules and classes Pylint can skip type-checking
+#ignored-modules=fastapi,starlette,pydantic
+#ignored-classes=BaseModel,Settings
+
+[REPORTS]
+# disable the final score report
+# reports=no
+#evaluation=10.0

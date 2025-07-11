@@ -1,3 +1,6 @@
+"""
+Module for application configuration settings.
+"""
 from pydantic_settings import BaseSettings
 
 

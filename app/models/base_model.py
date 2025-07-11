@@ -1,19 +1,16 @@
 """
 This module defines the BaseModel class, serving as a base for ORM models in the system.
 """
-import datetime
-
-from sqlalchemy import Column, DateTime, func
 from sqlalchemy.orm import DeclarativeBase
 
 __all__ = ('BaseModel',)
 
 
-class BaseModel(DeclarativeBase):
-    __abstract__ = True
+class BaseModel(DeclarativeBase):  # pylint: disable=too-few-public-methods
     """
     A base model class for ORM models, providing utility methods to streamline attribute updates.
     """
+    __abstract__ = True
 
     def update(self, **kwargs):
         """
