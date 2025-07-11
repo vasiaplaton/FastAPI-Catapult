@@ -1,3 +1,6 @@
+"""
+Main application file for the FastAPI application.
+"""
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.db_dependency import get_db

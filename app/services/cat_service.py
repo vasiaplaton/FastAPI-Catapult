@@ -1,3 +1,6 @@
+"""
+Cat Service Module
+"""
 from app.services.base_service_crud import BaseServiceCrud
 from app.models import Cat
 from app.schemas import CatSchema, CatCreateSchema
@@ -7,6 +10,9 @@ __all__ = ('CatService', )
 
 
 class CatService(BaseServiceCrud[Cat, CatSchema, CatCreateSchema]):
+    """
+    Service for managing Cat entities.
+    """
     def __init__(self, db):
         super().__init__(db, Cat, CatSchema, CatCreateSchema)
 
