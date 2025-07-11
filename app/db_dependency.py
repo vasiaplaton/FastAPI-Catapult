@@ -1,3 +1,6 @@
+"""
+Database dependency for FastAPI
+"""
 from app.database import SessionLocal
 
 
